@@ -1,0 +1,109 @@
+2021.12.2
+P6-P19
+
+2.实现路由切换效果
+声明式1种和编程式5种
+
+3.v-show控制静态组件footer的显示
+app里的$route就是展示的组件的$route 一会是login的$route 一会是search的$route
+使用meta存放信息
+v-show = "$route.meta.showFooter"
+
+4.Header搜索栏的传参
+在路由切换的同时把参数传给切换到的那个目标组件
+复习query params传参方法
+三种
+字符串写法
+模板字符串写法
+对象写法
+注意params需要在路由里声明
+
+query在网址中 search/?key=xx
+params在网址中 search/xx
+
+声明式1种和编程式5种都可以传参
+
+5.Header搜索栏的绑定
+用v-model绑定 这就是4中传的参数
+
+6.
+问题:设置params后,可以不传参数吗?
+路由里规定了 /:xx 就需要传 否则路径会出现问题
+设置成 /:xx? 就可以任意传或者不传了
+
+问题:params传了空串怎么办
+会出现路径问题
+使用undefined解决,parmas{key:''||undefined,}
+
+问题:路由组件使用props
+在路由组件中使用props
+再在这个路由组件对应的组件中props接收 
+
+问题:编程式导航重复点击出现NavigationDuplicated问题
+因为编程式导航跳转方法,比如push()会return一个promise
+push().then(()=>{},()=>{})添加回调解决
+this.$router是一个vueRouter构造函数的实例
+vueRouter构造函数的原型对象上有push方法
+添加太多回调过于麻烦 
+可以重写这个push方法 在重写的新push中加入回调
+不需要手动调用回调
+
+7.路由的重定向
+打开页面就会展示某个页面
+  {
+    // 重定向
+    path: '/',
+    redirect: '/home'
+  },
+
+8.实现home页面
+TypeNav组件 放在components中
+一个需要全局使用的三级分类的组件:全部商品分类
+由于在home search中多次使用 因此需要注册为全局组件
+因此 它是home页面的第一个组件
+在main.js中
+import TypeNav from '@/pages/Home/TypeNav/index'
+Vue.component(TypeNav.name,TypeNav)//注册全局组件
+全局组件在使用的时候不需要引入
+
+home的其他组件
+依次在home的文件夹里创建子文件夹
+子文件夹里写index(这个组件),和其他资源(如images)
+
+9.二次封装axios
+9.1
+发送ajax 有xhr,jq,fetch,axios
+9.2
+为什么要二次封装?为了写拦截器,在请求前,数据返回后做一些处理
+9.3
+src/API文件夹用于axios
+详细看api里的request.js
+
+10.接口统一管理
+看/api/index.js笔记
+axios请求一般在组件的生命周期里发送
+但是太多了不好管理
+在这个文件里统一管理
+这里用的是分别暴露 按需引入
+
+跨域
+前台:http://localhost:8080/#/home
+后台:http://39.98.123.211
+出现了跨域
+解决:jsonp cors 代理
+这里使用代理解决
+服务器和服务器之间没有跨域 浏览器和服务器之间才有跨域
+代理写在vue.config里
+
+11.进度条
+
+12.模块化的vuex
+
+*13.TypeNav展示数据
+TypeNav中的数据是从服务器得来的,而不是本地
+因此需要访问服务器得到数据,放到vuex里,然后通过vfor遍历生成
+
+组件挂载完毕,在钩子函数中触发vuex,在vuex的home模块中使用api(index中有统一管理的函数)发送请求,将数据存储于vuex的state 注:在函数参数里写{}是解构赋值
+然后在计算属性里把categoryList赋给TypeNav
+categoryList是一个数组 是一个三级菜单 从服务器得来
+在typenav的html中v-for它 生成html菜单

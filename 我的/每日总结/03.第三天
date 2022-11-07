@@ -1,0 +1,121 @@
+2021.12.3
+P20-P32
+
+14.
+设置一级菜单鼠标移入变色
+hover最简单,但是这里用vue实现
+利用鼠标事件(注意鼠标事件不能只加给一级菜单) 改变currentIndex的值 index是列表的索引
+:class = "{cur:index==currentIndex}
+设置当前是否有class = cur属性
+
+设置二级三级菜单隐藏
+一般用hover和display
+这里用vue 三元表达式
+:style = "{display:index==currentIndex?'block':'none'}"
+
+15.节流和防抖
+快速划过一级菜单 会频繁触发鼠标进入的事件 浏览器无法及时解析 
+可以使用lodash插件 实现防抖或节流
+三级菜单这里使用lodash的节流函数
+
+16.三级菜单的路由跳转和传递参数
+点击一级 二级 三级菜单的链接
+会跳转到相应的home页面
+
+如果使用声明式导航router-link:
+由于router-link是一个组件
+服务器返回数据时会创建大量组件
+导致卡顿
+
+如果使用编程式导航:
+给每个a标签绑定click事件
+太多了 上千个回调
+
+因此
+采用事件委派+编程式导航:
+事件委派:给所有a标签的父元素加上click事件(点击冒泡到a标签)
+
+存在问题:
+父元素有很多子元素,如何判断点击的是a标签?
+    加上自定义属性,值是名字,有这个属性就是a
+如何获取参数,传递给search,如点击产品的名字?
+    获取自定义属性
+
+e.target.dataset 可以获取目标的属性
+注意vue自定义属性需要加data-XXX
+
+给a加上自定义属性data-categoryname
+有就是a标签
+给a加上自定义属性data-categoryid1~3
+分辨是第几级的菜单
+
+根据data-categoryname和data-categoryid1~3调用编程式路由
+
+
+17.search模块的商品分类和过渡动画
+
+17.1.search中三级菜单的隐藏
+search中三级菜单不用时需要隐藏
+当路由是search时,将typenav的v-show设置为false 
+写在typenav的mounted中
+this.$route.path == '/search'
+
+17.2.search中三级菜单的动画效果1
+在search中,移入显示移出消失
+在home中,永远显示
+当路由是search时,执行移入移出事件
+
+17.3.search中三级菜单的过渡效果
+过渡动画:前提是有v-if/show
+复习过渡动画
+
+17.4.菜单的优化
+组件切换会被销毁
+我们把this.$store.dispatch("categoryList")写在typenav的mounted中
+在home,search之间切换时
+每切换一次加载一次typenav
+这句代码就执行一次
+就会发送ajax请求 过于频繁 需要优化
+
+写在app的mounted中 由于app只会加载一次
+this.$store.dispatch("categoryList")
+也只会执行一次 发送一次请求
+
+18.合并params和query
+跳到search有两种方法 一种是搜索栏 一种是菜单
+我想要搜索huawei,然后在菜单栏选类型手机
+怎么把两种方法传递的参数合并?
+在typenav中跳转search的路由 和 header中跳转search的路由 
+判断是否已经有参数了
+有的话就一起带着
+路由跳转是可以一起带query和params参数的
+
+19.
+public和assets下存放图片的区别：
+相同点：都是存放静态资源
+不同点：
+public：图片不会被webpack打包编译，直接复制到最终的打包目录下面
+assets：在js中使用的话，路径要经过webpack中的file-loader编译
+https://blog.csdn.net/weixin_52388167/article/details/116013377
+若把图片放在assets和public中，html页面都可以使用，但是在动态绑定中
+assets路径的图片会加载失败（因为webpack使用的是commonJS规范，必须使用require才可以。
+
+20.开发home首页:ListContainer
+20.1.模拟数据
+服务器没有返回这两个组件的数据
+这里使用mock模拟数据,伪造成服务器返回的数据,模拟json后端数据
+使用步骤
+创建mock文件夹
+准备json数据 banner.json存放着轮播图需要的数组数据,注意:json的数据需要格式化一下 别留空格
+将文件放到public文件夹中(原因看19)
+
+问题:json文件没有暴露 但为什么可以直接引用?
+在webpack中 图片 json默认暴露
+
+mockServe.js用于模拟数据
+在main.js引入mock
+
+在api中设置axios访问这个mock
+
+然后在ListContainer的mounted中发送axios请求
+并且将数据存储于vuex的home仓库(经典四步)

@@ -1,0 +1,87 @@
+2021.12.15
+
+P102-P 
+
+38.开发center模块:个人中心二级路由-我的订单
+请求接口的参数来自于分页器
+
+38.1.基本配置
+在center文件夹下,还有文件夹,装二级路由
+然后配置二级路由,配置路由跳转
+不使用vuex
+直接在回调里发请求获取数据 然后展示数据
+可以像search模块 参数在data里初始化
+
+38.2.问题:
+如何让一个结构 在vfor里只生成一次?
+使用vshow,如果index==0显示,否则不显示
+
+38.3.分页器(自己封装的组件)
+直接调用分页器组件 使用props传递页数的参数
+因为分页器的每个按钮点击都会触发changePageNo自定义事件
+因此myorder模块需要绑定自定义事件
+并指定回调函数用来改变page,然后重新获取数据更新页面
+
+
+39.导航守卫(继35.5)
+
+39.1.
+问题3:未登录时,有些页面不能访问
+
+实现需求:
+未登录时,访问trade,pay,center->跳转login->跳转到trade,pay,center
+采用全局守卫
+
+怎么判断地址?
+路径.indexOf(地址) != -1 , 即包含这个地址 , 跳转到login
+
+怎么存想访问的页面,让登陆后自动跳转?
+路由push跳转login时,携带query参数用于跳转
+因此要修改login组件,之前写的是登录后默认跳login
+现在要变成有参数跳参数,没有则跳home
+
+39.2.
+问题4:登录了,也不可以直接跳到trade,pay,paysuccess
+
+实现需求:
+登录了,也不可以直接跳到trade,而是只能从购物车路由过来
+想跳到pay,只能从trade来
+
+怎么实现?
+(1)trade,采用独享守卫,因为只用管trade一个路由(全局是所有路由切换都要执行一遍)
+来的是shopcart才放行,否则停留在当前页面,使用next(false),重置到from的路由的地址
+(2)pay同理
+(3)pausuccess可以同理,但这里我们换一种方法,采用组件内守卫
+原理同上
+注意,beforeRouterEnter里面拿不到组件的this,因为组件还未被创建
+
+40.图片懒加载
+服务器数据没回来之前,有默认图片
+使用VueLazyload插件
+在main引入并设置
+把img的src变成v-lazy
+
+自定义插件:
+vue.use?
+在用Vue使用别人的组件时，会用到 Vue.use() 。例如：Vue.use(VueRouter)、Vue.use(MintUI)。但是用 axios时，就不需要用 Vue.use(axios)
+Vue.use()什么时候使用?
+它在使用时实际是调用了该插件的[install方法]，所以引入的当前插件如果含有install方法我们就需要使用Vue.use
+什么是vue插件?
+插件通常用来为 Vue 添加全局功能。插件的功能范围没有严格的限制 一般有下面几种：
+添加全局方法或者属性。如: vue-custom-element
+添加全局资源：指令/过滤器/过渡等。如 vue-touch
+通过全局混入来添加一些组件选项。如 vue-router
+添加 Vue 实例方法，通过把它们添加到 Vue.prototype 上实现。
+一个库，提供自己的 API，同时提供上面提到的一个或多个功能。如 vue-router
+
+41.路由懒加载
+当打包构建应用时，JavaScript 包会变得非常大，影响页面加载。
+如果我们能把不同路由对应的组件分割成不同的代码块，然后[当路由被访问]的时候才加载对应组件，这样就会更加高效。
+https://next.router.vuejs.org/zh/guide/advanced/lazy-loading.html
+
+42.打包上线
+42.1
+npm run build
+.map文件是当代码报错时用来提示哪行代码有错
+
+42.2.购买服务器

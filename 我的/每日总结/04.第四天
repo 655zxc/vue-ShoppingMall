@@ -1,0 +1,83 @@
+2021.12.6
+P33-P42
+
+20.开发home首页:ListContainer(接第三天)
+20.2.实现轮播图
+使用swiper 方法看官网
+问题:轮播图的js代码放在哪?
+
+script里不行
+vue的script是个对象
+只能放特定的东西
+
+mounted不行 为什么?
+vfor根据服务器数据生成轮播图
+但是axios是异步的
+mounted完毕后 服务器数据还没过来
+轮播图结构还没完成
+
+解决方法:
+(1)js放在mounted里,设置定时器让js代码延迟一点,不好
+(2)js放在update里,更新的时候执行js代码,不好
+(3)使用watch监听bannerList数据(一开始由空数组变成有数据的数组),发生变化则执行js
+   不行,数组有了,但是结构还没有渲染完毕(因为v-for也需要时间)
+
+最好的方案:
+(4)watch + $nextTick,在watch发现bannerList变化后,js代码在dom更新后执行
+
+总结轮播图使用:引包,写html结构,
+
+
+
+
+21.开发home首页:Floor
+同20的获取数据:
+写一个axios,封装成函数,写vuex的四步,在这四步里调用封装axios的函数获取服务器数据存于state,在组件里获取state的数据
+注意不同点:
+floor是在home里vfor遍历出来的,dispatch和组件存数据要在home里进行,不能在floor内部进行
+数据通过父子组件通信由home传给floor
+
+注意:为什么floor的轮播图的js代码可以放在mounted中呢?
+因为轮播图js代码有效的前提是,页面中的dom更新了从服务器得到的数据
+floor没有异步axios请求,在mounted之前,数据就已经被home通过axios拿到,然后传给floor了
+
+
+
+22.开发home首页:轮播图的复用
+ListContainer和floor都有轮播图 可以设置为全局组件复用
+略
+
+
+
+23.开发Search模块
+依旧是套路:
+静态页面,拆组件
+写axios请求(发送axios在vuex里)
+vuex四步(dispatch在组件mounted里)
+组件获取state数据(在组件computed里)
+v-for循环数据生成html
+
+23.1.写axios
+search的请求需要参数,在调用的时候必须传参,至少是一个空对象
+根据参数(手机,奶粉,图书....),list接口服务器会返回相应的数据
+
+23.2.vuex四步
+
+23.3.组件获取数据
+这里使用getters获取数据,不用mapstate了,练习一下
+getters主要是计算属性,可以简化数据
+getters的参数是当前模块的state
+用getters简化,再用mapGetters映射
+return state.searchList.goodsList||[]
+注意加一个[] 否则可能返回undefined
+
+23.4.v-for循环数据生成html
+
+一个错误:
+使用axios发请求的时候,我一开始写错了,把method写成了methods,
+但是发现methods:"get"的写法可以通过,发送请求也没问题,
+后来写methods:"post"又是错的,应该是method写错了默认按照get发送吧
+多看看开发者工具中的网络请求,可以直接看到发送请求的类型!!!
+
+
+

@@ -1,0 +1,96 @@
+2021.12.8
+P55-P66
+
+[重点]28.开发Search模块:分页
+是一个全局组件Pagination,可以用ui组件,但这里手写
+
+属性:
+pageNo 当前页数
+pageSize 一页展示多少条数据
+total 总共数据有多少条
+continues 连续页码数
+这些参数由父亲使用<Pagination/>的时候传递
+
+总页数:
+total/pageSize向上取整
+
+连续页码数:
+1 2 ... X X X X X ...
+
+28.1.在search中传参和整理数据
+
+28.2.计算start和end
+根据pageNo和continues计算
+如果超出范围特殊计算
+
+28.3.vfor遍历生成html v-if隐藏不需要的页
+v-for的优先级会高于v-if，因此v-if会重复运行在每个v-for中。
+正确写法：使用template标签进行包裹
+
+28.4.判断要不要1和...
+start>1 就要1 否则不要(因为start<=1的时候 连续页中就包含1)
+start>2 就要... 否则不要(因为这时start=3 和1连不起来)
+
+28.5.绑定点击事件
+点击页数的时候,click绑定emit触发自定义事件并传参
+注意在第一页的时候上一页不可用
+
+28.6.当前页的样式
+当pageNo等于这个页 样式激活
+
+一个问题:注意写代码的时候,数据是数字还是字符串,有时候给数字赋值会赋值成字符串
+
+
+29.开发details模块:基本数据
+点击search中的商品,通过路由跳转到details模块(同时传参,商品信息),
+details获得商品信息参数发送dispatch,vuex调用axios(函数参数为商品信息)向服务器请求数据,然后在html中展示
+
+因此设置以下东西:
+设置静态页面和路由
+写一个axios请求
+vuex(组件发送dispatch,actions发送axios请求,获得数据并设置state,组件计算属性绑定数据)
+在html中展示得到的数据
+
+该路由携带参数为商品id
+
+点击图片跳转路由,采用声明式路由,展示位置在app中的<router-view></router-view>
+
+在typenav里写如果当前路由是details则隐藏菜单
+typenav是一个全局组件,他在home,search,details组件的html中
+
+使用前端路由，当切换到新路由时，想要页面滚到顶部
+scrollBehavior 方法
+
+注意,获取模块化的vuex中state的数据
+用这个绑定
+ ...mapState({
+        detailsList:(state)=>state.details.detailsList
+    })
+
+
+
+遇到报错:xxx 未定义undefined
+state中的detailsList初始是一个空对象,如果服务器的数据还没过来,访问它会报错
+当服务器数据回来的时候,又会替换,因此报错了也能用
+所以在计算属性里面写
+    return state.detailsList.categoryView || {}(服务器数据没及时收到时,返回一个空对象)
+而不是
+    return state.detailsList.categoryView(服务器数据没及时收到时,返回undefined)
+也可以在state定义categoryView为{} (我的做法)
+
+
+
+30.开发details模块:
+
+30.1.放大镜,Zoom和ImageList
+details给子组件zoom传需要的数据
+
+30.2.选择售卖属性
+给属性绑定点击事件,写一个排他算法
+
+30.3.放大镜和轮播图
+绑定点击事件:在轮播图中,点击第几张,并显示高亮
+放大镜就显示第几张,需要兄弟传参
+
+一个套路: 在点击事件中,可以传参数,比如点击目标在数组中的索引
+二个套路: :class="{active:表达式}" 响应式的样式

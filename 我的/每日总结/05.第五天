@@ -1,0 +1,91 @@
+2021.12.7
+P43-P54
+
+24.开发Search模块:根据传递参数展示数据
+当从菜单或搜索栏跳转到search
+search在mounted中使用this.$store.dispatch('getSearchList',{参数})
+让vuex发送axios请求
+但是传参变化一次 search就需要调用this.$store.dispatch('getSearchList',{参数})
+放在mounted中只会执行一次
+因此dispatch不可以放在mounted中
+
+传递的参数是vc的data中的数据
+需要和query params合并
+合并对象:
+Object.assign(o, obj) 浅拷贝
+把obj对象的内容浅拷贝到o对象中
+可以用来合并对象
+
+那么,如何实现点击菜单,搜索栏就会发送axios请求?(dispatch不能写在mounted里)
+监听路由是否变化
+$route是一个和searchList平级的数据,在开发者工具里观察,这点很重要
+watch:{
+    $route:{
+      immediate:true,
+      handler(){
+        this.getData()
+      }
+    }
+  }
+只要路由(参数变化,路由也会变化)发生变化
+
+25.开发Search模块:Search的子组件开发
+
+26.开发Search模块:面包屑
+26.1.菜单栏生成的面包屑
+就是categoryname,如果存在就v-if有
+删掉之后清除id和name并且会重新发送axios请求
+优化:undefined不会发送给服务器 空字符串会
+问题:删掉面包屑后,页面因为服务器返回的数据而变化,但是url没有变
+解决:进行路由跳转Search(删除路径中的query参数)
+
+26.2.搜索栏生成的面包屑
+同上
+问题:删除搜索栏的面包屑后,怎么在search上置空header的搜索栏
+兄弟组件通信 全局总线
+
+26.3.点击品牌生成的面包屑
+品牌在search的子组件SearchSelector中
+因为需要的数据都在父组件里 
+让子组件向父组件传参(品牌信息) 
+在父组件里发送请求
+
+删除面包屑的思路
+将删除的参数设置为"",再重新发送dispatch请求
+
+26.4.售卖属性生成的面包屑
+点击事件需要传参
+写法和26.3相似
+因为props是数组 因此vfor生成面包屑
+
+
+
+27.开发Search模块:排序
+传递参数,不需要自己排序
+order:排序方式 
+1: 综合,2: 价格 
+asc: 升序,desc: 降序  
+示例: "1:desc"
+
+27.1.样式
+哪个li变红取决于参数order里的数字
+:class="{active:searchParams.order.indexOf('1')!=-1}"
+判断参数order中有没有1,如果有,class就是active
+
+27.2.箭头
+使用vshow,根据order参数决定是否显示
+每个选择有两个箭头
+  <span v-show = "searchParams.order.indexOf('1')!=-1"
+  class = "iconfont" 
+  :class = "{'icon-jiantou_xiangxia':searchParams.order.indexOf('desc')!=-1,'icon-jiantou_xiangshang':searchParams.order.indexOf('asc')!=-1}" >
+  </span >
+  <!-- 如果order有desc,class就是icon-jiantou_xiangxia
+  有asc,class就是icon-jiantou_xiangshang -->
+
+27.3.绑定事件
+事件需要传参,综合传字符1,价格传字符2
+两者触发的函数是同一个
+
+
+
+

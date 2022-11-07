@@ -1,0 +1,137 @@
+2021.12.13
+
+P80-P92
+
+33.9.删除选中商品
+我们没有一次性删除很多商品的接口
+只有删单个商品的接口
+需要我们自己造
+删除选中商品这个回调函数没办法收集到有用的数据比如id
+
+写删除选中商品的vuex
+在actions中,可以通过访问store的getters来访问state的数据
+获取ischecked为1的id
+在删除选中商品的actions中调用删除单个商品的dispatch
+
+然后处理每次删除单个商品产生的promise
+返回promise.all(所有的单个promise)
+在组件的回调函数接收返回结果
+判断成功与否
+
+注意:在actions改state或者getters数据
+没用 只是改本地的 重新向服务器请求更新就没了
+必须用dispatch改服务器的数据
+
+
+34.开发register组件
+34.1.基本数据
+34.2.获取验证码
+写axios
+vuex四步
+34.3.密码
+34.4.注册
+写axios
+收集参数
+发送dispatch
+vuex
+做async await处理
+34.5.表单验证
+使用vee-validate
+
+
+[重要]35.开发login组件
+
+35.1.同34.4
+需要prevent阻止表单的默认行为
+登录服务器返回一个token,代表这个用户是谁,
+用户信息不会直接给前台,需要这个token去得到用户的信息,有点像id
+把token存在state
+以后再请求数据 只需要发送token就知道这个用户是谁
+关于vuex的非持久化:vuex仓库刷新,数据就没了
+
+35.2.获取用户登录信息
+在home的mounted里调用dispatch获取用户信息
+和id一样,这个请求没有参数,但是要把token放在请求头
+不然服务器不认识这是谁
+通过在请求拦截器里面写完成
+不然这个接口拿不到信息
+然后进行vuex四步 存储用户信息
+
+  35.1在登录界面得到了token,35.2在home界面用tokne得到了用户信息
+
+35.3.header组件左上角展示用户信息
+使用v if隐藏,通过判断userinfo有没有name
+然后v else展示用户名
+
+35.4.token的持久化:本地存储
+登陆后 一刷新登录就没了 因为token没了 vuex不是持久化的
+想要持久化存储token
+在vuex的user的actions的登录(因为登录获取token)方法中
+把token存于本地localStorage
+
+每次刷新 vuex的state的token都会变为空串
+
+因此把vuex的state的token默认值设置为本地存储的token
+没有就是空串(比如第一次 未登录的时候) 会被之后登录得到的token覆盖
+有(登录之后) 就是本地存储token的值
+
+
+
+
+35.5.
+问题1
+切换到search刷新 登录信息又没了?为什么?
+因为刷新 组件自身的token没了
+本地虽然有token
+但是只有home的mounted才写了请求userInfo,才能使用本地token获取userInfo
+因此home刷新还有登录信息
+因此search根本没有请求userinfo 组件也就没有token(被刷新了)
+
+解决:
+(1)全部组件加上getuserInfo 麻烦
+(2)放app也不行
+
+问题2:
+用户登录后就不应该能回到login页面了
+
+问题1和问题2的共同解决:(详见router > index.js)
+设置全局路由守卫
+根据state的token判断有没有登陆过
+(1)如果登录了且to.path是login 则next(/) 即重定向
+(2)如果登录了但去的不是login,且有用户信息,放行
+(3)如果登录了但去的不是login,没有用户信息了(刷新消失掉了或者未获取,但是用户登陆过,还有本地token能用),重新发送获取用户信息
+        (3.1)如果获取成功,就是重新得到用户信息,发行
+        (3.2)如果获取失败(登陆过,用户信息刷新丢了,本地token也失效了),需要登出,调用登出的dispatch,跳转到login重新登陆
+(4)如果没有登录next() 放行
+
+把获取用户信息请求userInfo写在(3)中,解决了问题1
+比如,用户第一次登录,得到token,自动跳转到home,符合(3.1),因此获取用户信息
+然后,用户跳转到search,符合(2)
+然后,用户刷新,丢了vuex里的数据,只有本地存储的token,符合(3.1),因此获取用户信息
+
+问题3:未登录时,有些页面不能访问
+
+
+
+35.6.退出登录
+写axios
+写vuex(清除数据在mutation中做)
+
+35.7.导航守卫
+导航被触发（A–>B）
+调用A组件内路由守卫beforeRouteLeave(to,from,next)
+调用全局路由前置守卫router.beforeEach(to,from,next)
+调用B路由独享守卫 beforeEnter(to,from.next)
+解析异步路由组件B
+调用B的组件内路由守卫beforeRouteEnter(to,from,next)
+调用全局路由解析守卫 router.beforeResolve(to,from,next)
+导航被确认
+调用全局路由钩子router.afterEach(to,from)
+渲染B组件DOM
+
+to去的路由信息 from来的路由信息
+next()放行 next(path)放行到等指定路由 
+
+全局是所有路由切换都会执行 
+独享是只有切换到这个路由执行 
+
